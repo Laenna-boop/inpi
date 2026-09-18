@@ -1,0 +1,418 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>INPI - Consulta Base de Dados</title>
+    <style>
+        /* ==========================================================================
+           PALETA DE CORES (Baseada no arquivo "paleta_cores_inpi.pdf")
+           ========================================================================== */
+        :root {
+            /* Cores Institucionais */
+            --azul-principal: #1F3972;
+            --azul-medio: #36558C;
+            --azul-claro: #6F86B3;
+            --azul-muito-claro: #BEC4D2;
+            --fundo-claro: #F4F6F9;
+
+            /* Cores das Categorias */
+            --cat-marca: #A85F62;
+            --cat-patente: #6268A8;
+            --cat-desenho: #B59A58;
+            --cat-info: #5878A0;
+            --cat-ig: #678B73;
+            --cat-programa: #596A8E;
+            --cat-topografia: #52766F;
+            --cat-transferencia: #78658E;
+        }
+
+        /* ==========================================================================
+           RESET E ESTILOS GERAIS
+           ========================================================================== */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: Arial, Helvetica, sans-serif;
+        }
+
+        body {
+            background-color: var(--fundo-claro);
+            color: var(--azul-principal);
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+
+        a {
+            text-decoration: none;
+            color: inherit;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        /* ==========================================================================
+           CABEÇALHO GOVERNAMENTAL (Barra Brasil)
+           ========================================================================== */
+        .gov-bar {
+            padding: 10px 0;
+            font-size: 0.85rem;
+            background-color: #fff;
+        }
+
+        .gov-bar .container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .gov-brand {
+            display: flex;
+            align-items: center;
+            font-weight: bold;
+            color: #333;
+        }
+
+        .gov-brand img {
+            height: 20px;
+            margin-right: 10px;
+        }
+
+        .gov-nav {
+            display: flex;
+            gap: 20px;
+        }
+
+        .gov-nav a:hover {
+            color: var(--azul-medio);
+        }
+
+        /* ==========================================================================
+           CABEÇALHO PRINCIPAL INPI (RETÂNGULO AZUL)
+           ========================================================================== */
+        .main-header {
+            padding: 30px 0;
+            background-color: var(--azul-principal);
+            color: #ffffff;
+        }
+
+        .main-header .container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo-area {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .logo-area h1 {
+            font-size: 3rem;
+            font-weight: 900;
+            font-style: italic;
+            color: #ffffff;
+        }
+
+        .logo-text {
+            font-size: 0.85rem;
+            line-height: 1.2;
+            font-weight: bold;
+            color: #ffffff;
+        }
+
+        .user-actions {
+            font-size: 0.9rem;
+            font-weight: bold;
+        }
+
+        .user-actions a {
+            margin: 0 10px;
+            color: #ffffff;
+            transition: color 0.3s;
+        }
+
+        .user-actions a:hover {
+            color: var(--azul-muito-claro);
+        }
+
+        /* ==========================================================================
+           CONTEÚDO PRINCIPAL (Grid de Categorias)
+           ========================================================================== */
+        main {
+            flex-grow: 1;
+            padding: 40px 0;
+        }
+
+        .page-title {
+            text-align: center;
+            font-size: 1.8rem;
+            margin-bottom: 40px;
+            font-weight: normal;
+            color: var(--azul-principal);
+        }
+
+        .grid-categorias {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 25px;
+            margin-bottom: 50px;
+        }
+
+        .card {
+            background-color: #fff;
+            border: 2px solid var(--azul-muito-claro);
+            border-radius: 8px;
+            padding: 30px 15px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            transition: transform 0.2s, box-shadow 0.2s, border-color 0.2s;
+            min-height: 180px;
+            color: var(--azul-principal);
+        }
+
+        .card img {
+            width: 60px;
+            height: 60px;
+            margin-bottom: 15px;
+        }
+
+        .card h3 {
+            font-size: 0.95rem;
+            text-transform: uppercase;
+            font-weight: bold;
+        }
+
+        /* Efeitos de Hover */
+        .card.marca:hover { border-color: var(--cat-marca); box-shadow: 0 4px 8px rgba(168, 95, 98, 0.2); }
+        .card.marca h3 { color: var(--cat-marca); }
+
+        .card.patente:hover { border-color: var(--cat-patente); box-shadow: 0 4px 8px rgba(98, 104, 168, 0.2); }
+        .card.patente h3 { color: var(--cat-patente); }
+
+        .card.desenho:hover { border-color: var(--cat-desenho); box-shadow: 0 4px 8px rgba(181, 154, 88, 0.2); }
+        .card.desenho h3 { color: var(--cat-desenho); }
+
+        .card.info:hover { border-color: var(--cat-info); box-shadow: 0 4px 8px rgba(88, 120, 160, 0.2); }
+        .card.info h3 { color: var(--cat-info); }
+
+        .card.ig:hover { border-color: var(--cat-ig); box-shadow: 0 4px 8px rgba(103, 139, 115, 0.2); }
+        .card.ig h3 { color: var(--cat-ig); }
+
+        .card.programa:hover { border-color: var(--cat-programa); box-shadow: 0 4px 8px rgba(89, 106, 142, 0.2); }
+        .card.programa h3 { color: var(--cat-programa); }
+
+        .card.topografia:hover { border-color: var(--cat-topografia); box-shadow: 0 4px 8px rgba(82, 118, 111, 0.2); }
+        .card.topografia h3 { color: var(--cat-topografia); }
+
+        .card.transferencia:hover { border-color: var(--cat-transferencia); box-shadow: 0 4px 8px rgba(120, 101, 142, 0.2); }
+        .card.transferencia h3 { color: var(--cat-transferencia); }
+
+        /* ==========================================================================
+           SEÇÃO DE NOTAS
+           ========================================================================== */
+        .notas {
+            border-top: 1px solid var(--azul-muito-claro);
+            padding-top: 20px;
+        }
+
+        .notas h4 {
+            margin-bottom: 15px;
+            font-size: 1rem;
+        }
+
+        .notas-conteudo {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 40px;
+            font-size: 0.8rem;
+            line-height: 1.5;
+            color: #555;
+            text-transform: uppercase;
+        }
+
+        /* ==========================================================================
+           RODAPÉ
+           ========================================================================== */
+        footer {
+            background-color: var(--azul-principal);
+            color: #fff;
+            padding: 20px 0;
+            font-size: 0.85rem;
+            margin-top: 30px;
+        }
+
+        footer .container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .fale-conosco img {
+            height: 35px;
+            filter: brightness(0) invert(1); 
+        }
+
+        /* ==========================================================================
+           RESPONSIVIDADE
+           ========================================================================== */
+        @media (max-width: 992px) {
+            .grid-categorias {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            .gov-nav {
+                display: none;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .main-header .container {
+                flex-direction: column;
+                gap: 20px;
+            }
+            .notas-conteudo {
+                grid-template-columns: 1fr;
+                gap: 20px;
+            }
+            footer .container {
+                flex-direction: column;
+                gap: 15px;
+                text-align: center;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .grid-categorias {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Barra Brasil Simulação -->
+    <div class="gov-bar">
+        <div class="container">
+            <div class="gov-brand">
+                <img src="midia/brasil-flag.svg" alt="Bandeira do Brasil" onerror="this.style.display='none'"> BRASIL
+            </div>
+            <nav class="gov-nav">
+                <a href="#">ACESSO À INFORMAÇÃO</a> |
+                <a href="#">PARTICIPE</a> |
+                <a href="#">SERVIÇOS</a> |
+                <a href="#">LEGISLAÇÃO</a> |
+                <a href="#">CANAIS</a>
+            </nav>
+        </div>
+    </div>
+
+    <!-- Cabeçalho INPI (Retângulo Azul) -->
+    <header class="main-header">
+        <div class="container">
+            <div class="logo-area">
+                <h1>INPI</h1>
+                <div class="logo-text">
+                    INSTITUTO<br>
+                    NACIONAL DA<br>
+                    PROPRIEDADE<br>
+                    INDUSTRIAL
+                </div>
+            </div>
+            <div class="user-actions">
+                <a href="#">AJUDA?</a> |
+                <a href="#">LOGIN</a> |
+                <a href="#">CADASTRE-SE AQUI</a>
+            </div>
+        </div>
+    </header>
+
+    <!-- Conteúdo Principal -->
+    <main class="container">
+        <h2 class="page-title">CONSULTA BASE DE DADOS DO INPI</h2>
+
+        <div class="grid-categorias">
+            <!-- Marca -->
+            <a href="https://busca.inpi.gov.br/pePI/jsp/marcas/Pesquisa_num_processo.jsp" target="_blank" rel="noopener noreferrer" class="card marca">
+                <img src="midia/icone-marca.svg" alt="Ícone Marca">
+                <h3>Marca</h3>
+            </a>
+
+            <!-- Patente -->
+            <a href="https://busca.inpi.gov.br/pePI/jsp/patentes/PatenteSearchBasico.jsp" target="_blank" rel="noopener noreferrer" class="card patente">
+                <img src="midia/icone-patente.svg" alt="Ícone Patente">
+                <h3>Patente</h3>
+            </a>
+
+            <!-- Desenho Industrial -->
+            <a href="https://busca.inpi.gov.br/pePI/jsp/desenhos/DesenhoSearchBasico.jsp" target="_blank" rel="noopener noreferrer" class="card desenho">
+                <img src="midia/icone-desenho-industrial.svg" alt="Ícone Desenho Industrial">
+                <h3>Desenho<br>Industrial</h3>
+            </a>
+
+            <!-- Informação Tecnológica de Patentes -->
+            <a href="https://busca.inpi.gov.br/pePI/jsp/informacaotecnologica/InformacaoBancoError.jsp" target="_blank" rel="noopener noreferrer" class="card info">
+                <img src="midia/icone-informacao-tecnologica.svg" alt="Ícone Informação Tecnológica">
+                <h3>Informação<br>Tecnológica de<br>Patentes</h3>
+            </a>
+
+            <!-- Indicação Geográfica -->
+            <a href="https://www.gov.br/inpi/pt-br/servicos/indicacoes-geograficas/pedidos-de-indicacao-geografica-no-brasil" target="_blank" rel="noopener noreferrer" class="card ig">
+                <img src="midia/icone-indicacao-geografica.svg" alt="Ícone Indicação Geográfica">
+                <h3>Indicação<br>Geográfica</h3>
+            </a>
+
+            <!-- Programa de Computador -->
+            <a href="https://busca.inpi.gov.br/pePI/jsp/programas/ProgramaSearchBasico.jsp" target="_blank" rel="noopener noreferrer" class="card programa">
+                <img src="midia/icone-programa-computador.svg" alt="Ícone Programa de Computador">
+                <h3>Programa de<br>Computador</h3>
+            </a>
+
+            <!-- Topografia de Circuito Integrado -->
+            <a href="https://busca.inpi.gov.br/pePI/jsp/circuitos/CircuitosBancoError.jsp" target="_blank" rel="noopener noreferrer" class="card topografia">
+                <img src="midia/icone-topografia.svg" alt="Ícone Topografia de Circuito Integrado">
+                <h3>Topografia de<br>Circuito Integrado</h3>
+            </a>
+
+            <!-- Transferência de Tecnologia -->
+            <a href="https://busca.inpi.gov.br/pePI/jsp/contratos/ContratoSearchBasico.jsp" target="_blank" rel="noopener noreferrer" class="card transferencia">
+                <img src="midia/icone-transferencia-tecnologia.svg" alt="Ícone Transferência de Tecnologia">
+                <h3>Transferência<br>de Tecnologia</h3>
+            </a>
+        </div>
+
+        <!-- Seção de Notas -->
+        <section class="notas">
+            <h4>NOTA:</h4>
+            <div class="notas-conteudo">
+                <p>- Para efeitos legais a Revista Eletrônica da Propriedade Industrial (RPI) é o único canal destinado a publicar os atos, despachos e decisões relacionados às atividades da autarquia.</p>
+                <p>- O acervo contido na base de dados está restrito a documentos publicados a partir do ano 2000, e a partir de outubro de 2009 para contratos de tecnologia, cujos dados foram publicados oficialmente na Revista da Propriedade Industrial.</p>
+            </div>
+        </section>
+    </main>
+
+    <!-- Rodapé -->
+    <footer>
+        <div class="container">
+            <div class="endereco">
+                RUA MAYRINK VEIGA, 9 - CENTRO - RJ - CEP: 20090-910
+            </div>
+            <div class="fale-conosco">
+                <a href="#">
+                    <img src="midia/icone-fale-conosco.svg" alt="Fale Conosco">
+                </a>
+            </div>
+        </div>
+    </footer>
+
+</body>
+</html>
